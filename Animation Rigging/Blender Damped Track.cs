@@ -4,22 +4,6 @@ using UnityEngine.Animations.Rigging;
 
 namespace BlenderConstraints
 {
-    public enum SignedAxis
-    {
-        /// <summary>Positive X Axis (1, 0, 0)</summary>
-        X,
-        /// <summary>Negative X Axis (-1, 0, 0)</summary>
-        X_NEG,
-        /// <summary>Positive Y Axis (0, 1, 0)</summary>
-        Y,
-        /// <summary>Negative Y Axis (0, -1, 0)</summary>
-        Y_NEG,
-        /// <summary>Positive Z Axis (0, 0, 1)</summary>
-        Z,
-        /// <summary>Negative Z Axis (0, 0, -1)</summary>
-        Z_NEG
-    }
-
     public class BlenderDampedTrack : RigConstraint<BlenderDampedTrackJob, BlenderDampedTrackData, BlenderDampedTrackBinder>
     {
     }
@@ -32,30 +16,26 @@ namespace BlenderConstraints
     {
         public ReadWriteTransformHandle constrained;
         public ReadOnlyTransformHandle target;
-        public Vector3Property savedRotationConstrained; // local Unity eulers
+        public Vector3Property savedRotationConstrained; // local (parent) Unity eulers
         public IntProperty trackAxis;
-
-        public Vector3 axisVector (SignedAxis axis) => axis switch
-        {
-            SignedAxis.X => new Vector3(1, 0, 0),
-            SignedAxis.X_NEG => new Vector3(-1, 0, 0),
-            SignedAxis.Y => new Vector3(0, 1, 0),
-            SignedAxis.Y_NEG => new Vector3(0, -1, 0),
-            SignedAxis.Z => new Vector3(0, 0, 1),
-            SignedAxis.Z_NEG => new Vector3(0, 0, -1),
-            _ => throw new System.Exception($"Unsupported axis enum value {axis} ({(int)axis})"),
-        };
 
         public FloatProperty jobWeight { get; set; }
 
         public void ProcessAnimation(AnimationStream stream)
         {
-            Vector3 aimAxisStart = Quaternion.Euler(savedRotationConstrained.Get(stream)) * axisVector((SignedAxis)trackAxis.Get(stream));
-            Vector3 targetDir = target.GetPosition(stream) - constrained.GetPosition(stream);
-            Debug.Log($"rotate {aimAxisStart} to {targetDir}");
-            Quaternion aimedRotation = Quaternion.FromToRotation(aimAxisStart, targetDir);
-            aimedRotation *= Quaternion.Euler(savedRotationConstrained.Get(stream));
-            constrained.SetRotation(stream, Quaternion.Lerp(constrained.GetRotation(stream), aimedRotation, jobWeight.Get(stream)));
+            Quaternion restPoseLocal = Quaternion.Euler(savedRotationConstrained.Get(stream));
+
+            // compute aim axis at rest, relative to constrained's parent (or world if no parent exists)
+            Vector3 aimAxisAtRest = restPoseLocal * AxisUtils.vectorFromAxis[trackAxis.Get(stream)];
+            // compute properly aimed axis, relative to constrained's parent (or world if no parent exists)
+            Quaternion parentRotationWorld = constrained.GetRotation(stream) * Quaternion.Inverse(constrained.GetLocalRotation(stream));
+            Vector3 aimAxisTarget = Quaternion.Inverse(parentRotationWorld) * (target.GetPosition(stream) - constrained.GetPosition(stream));
+            // compute swing from aim axis at rest to properly aimed axis
+            Quaternion aimCorrection = Quaternion.FromToRotation(aimAxisAtRest, aimAxisTarget);
+            // compute final aim oriëntation relative to constrained's parent (or world if no parent exists)
+            Quaternion aimedRotation = aimCorrection * restPoseLocal;
+            // write back weighted result
+            constrained.SetLocalRotation(stream, Quaternion.Lerp(constrained.GetRotation(stream), aimedRotation, jobWeight.Get(stream)));
         }
 
         public void ProcessRootMotion(AnimationStream stream) { }

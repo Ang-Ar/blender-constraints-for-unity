@@ -3,6 +3,23 @@ using UnityEngine;
 
 namespace BlenderConstraints
 {
+    public enum SignedAxis
+    {
+        X,
+        Y,
+        Z,
+        X_NEG,
+        Y_NEG,
+        Z_NEG,
+    }
+
+    public enum UpdateMode
+    {
+        Update,
+        FixedUpdate,
+        Animation, // currently non functional
+    }
+
     public enum EulerAxisOrder
     {
         // applied front-to-back as extrinsic eulers
@@ -39,11 +56,14 @@ namespace BlenderConstraints
             new byte[] {2, 1, 0}, // ZYX,
         };
 
-        static Vector3[] worldAxesXYZ =
+        static public Vector3[] vectorFromAxis =
         {
-            new (1, 0, 0),
-            new (0, 1, 0),
-            new (0, 0, 1),
+            new (1, 0, 0),  // X
+            new (0, 1, 0),  // Y
+            new (0, 0, 1),  // Z
+            new (-1, 0, 0), // -X
+            new (0, -1, 0), // -Y
+            new (0, 0, -1), // -Z
         };
 
         static public Vector3 QuaternionToCustomEulers(Quaternion quaternion, EulerAxisOrder eulerOrder)
@@ -135,9 +155,9 @@ namespace BlenderConstraints
             // NOTE: eulerAngles should list angles in the order given by eulerOrder and in radians
 
             // get all axes as Vector3 before any rotation, in their custom order
-            Vector3 axis0 = worldAxesXYZ[eulerOrderFromEnum[(int)eulerOrder][0]];
-            Vector3 axis1 = worldAxesXYZ[eulerOrderFromEnum[(int)eulerOrder][1]];
-            Vector3 axis2 = worldAxesXYZ[eulerOrderFromEnum[(int)eulerOrder][2]];
+            Vector3 axis0 = vectorFromAxis[eulerOrderFromEnum[(int)eulerOrder][0]];
+            Vector3 axis1 = vectorFromAxis[eulerOrderFromEnum[(int)eulerOrder][1]];
+            Vector3 axis2 = vectorFromAxis[eulerOrderFromEnum[(int)eulerOrder][2]];
 
             // apply first intrinsic rotation
             Quaternion result = Quaternion.AngleAxis(eulerAngles[2] * Mathf.Rad2Deg, axis2);
