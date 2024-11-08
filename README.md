@@ -25,6 +25,7 @@ If you want to use the Animation Rigging system, check out the documentation her
 If you are encountering unexpected behavior using the Animation Rigging constraints or don't want to use them for some other reason, use the variants ending in ``Simple`` instead. These can be added to any object in the scene. You can select whether to apply the constraints in ``Update()`` or ``FixedUpdate()``.There is also a toggle for applying the constraint in edit mode.
 
 The constraints' inspector contains a button to easily convert a component between both variants while maintaining settings. Of course the Animation Rigging constraints won't have any effect unless they are in a proper hierachy (see documentation above).
+There is also a bulk convert option under ``Window>Convert Blender Constraints``.
 
 While most of the constraint components' options can be changed at run-time, the constrained- & target object as well as their rest poses cannot.
 

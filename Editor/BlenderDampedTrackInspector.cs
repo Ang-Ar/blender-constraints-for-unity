@@ -24,15 +24,25 @@ public class BlenderDampedTrackEditor : Editor
 
         if (GUILayout.Button("convert to simple constraint"))
         {
-            Undo.RecordObject(target.gameObject, "convert to simple constraint");
-            var simpleConstraint = target.gameObject.AddComponent<BlenderDampedTrackSimple>();
-            simpleConstraint.weight = target.weight;
-            simpleConstraint.constrained = target.data.constrained;
-            simpleConstraint.target = target.data.target;
-            simpleConstraint.constrainedRestPose = Quaternion.Euler(target.data.savedRotationConstrained);
-            simpleConstraint.axis = target.data.axis;
-            DestroyImmediate(target);
+            ConvertComponent(target, useAnimationRigging: false);
         }
+    }
+
+    public static void ConvertComponent(BlenderDampedTrack target, bool useAnimationRigging, bool updateInEditMode = true, UpdateMode updateMode = UpdateMode.Update)
+    {
+        if (useAnimationRigging) return;
+
+        Undo.RecordObject(target.gameObject, "convert to simple constraint");
+        var simpleConstraint = target.gameObject.AddComponent<BlenderDampedTrackSimple>();
+        simpleConstraint.weight = target.weight;
+        simpleConstraint.constrained = target.data.constrained;
+        simpleConstraint.target = target.data.target;
+        simpleConstraint.constrainedRestPose = Quaternion.Euler(target.data.savedRotationConstrained);
+        simpleConstraint.axis = target.data.axis;
+        DestroyImmediate(target);
+
+        simpleConstraint.updateInEditMode = updateInEditMode;
+        simpleConstraint.updateMode = updateMode;
     }
 }
 
@@ -56,14 +66,27 @@ public class BlenderDampedTrackSimpleEditor : Editor
 
         if (GUILayout.Button("convert to ainmation rigging constraint"))
         {
-            Undo.RecordObject(target.gameObject, "convert to animation rigging constraint");
-            var simpleConstraint = target.gameObject.AddComponent<BlenderDampedTrack>();
-            simpleConstraint.weight = target.weight;
-            simpleConstraint.data.constrained = target.constrained;
-            simpleConstraint.data.target = target.target;
-            simpleConstraint.data.savedRotationConstrained = target.constrainedRestPose.eulerAngles;
-            simpleConstraint.data.axis = target.axis;
-            DestroyImmediate(target);
+            ConvertComponent(target, useAnimationRigging: true);
         }
+    }
+
+    public static void ConvertComponent(BlenderDampedTrackSimple target, bool useAnimationRigging, bool updateInEditMode = true, UpdateMode updateMode = UpdateMode.Update)
+    {
+        if (!useAnimationRigging)
+        {
+            Undo.RecordObject(target.gameObject, "change update settings");
+            target.updateInEditMode = updateInEditMode;
+            target.updateMode = updateMode;
+            return;
+        }
+
+        Undo.RecordObject(target.gameObject, "convert to animation rigging constraint");
+        var simpleConstraint = target.gameObject.AddComponent<BlenderDampedTrack>();
+        simpleConstraint.weight = target.weight;
+        simpleConstraint.data.constrained = target.constrained;
+        simpleConstraint.data.target = target.target;
+        simpleConstraint.data.savedRotationConstrained = target.constrainedRestPose.eulerAngles;
+        simpleConstraint.data.axis = target.axis;
+        DestroyImmediate(target);
     }
 }
