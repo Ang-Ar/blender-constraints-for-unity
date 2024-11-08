@@ -43,3 +43,6 @@ While most of the constraint components' options can be changed at run-time, the
 - :white_check_mark: Target
 - :white_check_mark: Track Axis
 - :white_check_mark: Influence
+
+Bone constraint version:
+- :x: Head/Tail (targets the GameObject's Origin, i.e. the head)
