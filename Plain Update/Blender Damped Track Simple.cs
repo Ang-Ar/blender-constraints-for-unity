@@ -1,13 +1,50 @@
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif // UNITY_EDITOR
 using UnityEngine;
 
 namespace BlenderConstraints
 {
     [ExecuteAlways]
-    public class BlenderDampedTrackSimple : MonoBehaviour
+    public class BlenderDampedTrackSimple : MonoBehaviour, IBlenderConstraintSimple
     {
+        public GameObject GameObject { get => this.gameObject; }
+
+        public float Weight { get => weight; set => weight = Mathf.Clamp(value, 0f, 1f); }
+        public Transform Constrained { get => constrained; }
+        public Transform Target { get => target; }
+        public bool UpdateInEditMode { get => updateInEditMode; set => updateInEditMode = value; }
+        public UpdateMode UpdateMode { get => updateMode; set => updateMode = value; }
+
+#if (UNITY_EDITOR)
+        public IBlenderConstraint ConvertComponent(bool useAnimationRigging, bool updateInEditMode = true, UpdateMode updateMode = UpdateMode.Update)
+        {
+            Undo.SetCurrentGroupName("convert blender constraint");
+
+            if (!useAnimationRigging)
+            {
+                Undo.RecordObject(this, "update constraint settings");
+                this.updateInEditMode = updateInEditMode;
+                this.updateMode = updateMode;
+                PrefabUtility.RecordPrefabInstancePropertyModifications(this);
+                return this;
+            }
+
+            var simpleConstraint = Undo.AddComponent<BlenderDampedTrack>(this.gameObject);
+            Undo.RecordObject(simpleConstraint, "clone constraint settings");
+            simpleConstraint.weight = weight;
+            simpleConstraint.data.constrained = constrained;
+            simpleConstraint.data.target = target;
+            simpleConstraint.data.savedRotationConstrained = constrainedRestPose.eulerAngles;
+            simpleConstraint.data.axis = axis;
+            Undo.DestroyObjectImmediate(this);
+
+            PrefabUtility.RecordPrefabInstancePropertyModifications(simpleConstraint);
+
+            return simpleConstraint;
+        }
+#endif //UNITY_EDITOR
+
         [Range(0f, 1f)] public float weight = 1f;
 
         [Space]
@@ -20,6 +57,7 @@ namespace BlenderConstraints
         [Space]
 
         public bool updateInEditMode = false;
+
         public UpdateMode updateMode = UpdateMode.Update;
 
         void Update()
@@ -33,14 +71,6 @@ namespace BlenderConstraints
         private void FixedUpdate()
         {
             if (updateMode == UpdateMode.FixedUpdate)
-            {
-                ApplyConstraint();
-            }
-        }
-
-        private void OnAnimatorMove()
-        {
-            if (updateMode == UpdateMode.Animation)
             {
                 ApplyConstraint();
             }

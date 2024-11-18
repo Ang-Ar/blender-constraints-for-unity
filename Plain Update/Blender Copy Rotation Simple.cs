@@ -1,11 +1,52 @@
+#if UNITY_EDITOR
+using UnityEditor;
+#endif // UNITY_EDITOR
 using UnityEngine;
 
 
 namespace BlenderConstraints
 {
     [ExecuteAlways]
-    public class BlenderCopyRotationSimple : MonoBehaviour
+    public class BlenderCopyRotationSimple : MonoBehaviour, IBlenderConstraintSimple
     {
+        public GameObject GameObject { get => this.gameObject; }
+        public float Weight { get => weight; set => weight = Mathf.Clamp(value, 0f, 1f); }
+        public Transform Constrained { get => constrained; }
+        public Transform Target { get => target; }
+        public bool UpdateInEditMode { get => updateInEditMode; set => updateInEditMode = value; }
+        public UpdateMode UpdateMode { get => updateMode; set => updateMode = value; }
+
+#if (UNITY_EDITOR)
+        public IBlenderConstraint ConvertComponent(bool useAnimationRigging, bool updateInEditMode = true, UpdateMode updateMode = UpdateMode.Update)
+        {
+            Undo.SetCurrentGroupName("convert blender constraint");
+
+            if (!useAnimationRigging)
+            {
+                Undo.RecordObject(this, "update constraint settings");
+                this.updateInEditMode = updateInEditMode;
+                this.updateMode = updateMode;
+                PrefabUtility.RecordPrefabInstancePropertyModifications(this);
+                return this;
+            }
+
+            var animRigConstraint = Undo.AddComponent<BlenderCopyRotation>(this.gameObject);
+            Undo.RecordObject(animRigConstraint, "clone constraint settings");
+            animRigConstraint.weight = weight;
+            animRigConstraint.data.constrained = constrained;
+            animRigConstraint.data.target = target;
+            animRigConstraint.data.savedRotationConstrained = constrainedRestPose.eulerAngles;
+            animRigConstraint.data.savedRotationTarget = targetRestPose.eulerAngles;
+            animRigConstraint.data.eulerAxisOrder = order;
+            animRigConstraint.data.includedAxes = mask;
+            Undo.DestroyObjectImmediate(this);
+
+            PrefabUtility.RecordPrefabInstancePropertyModifications(animRigConstraint);
+
+            return animRigConstraint;
+        }
+#endif // UNITY_EDITOR
+
         [Range(0f, 1f)] public float weight = 1f;
 
         [Space]
@@ -36,14 +77,6 @@ namespace BlenderConstraints
         private void FixedUpdate()
         {
             if (updateMode == UpdateMode.FixedUpdate)
-            {
-                ApplyConstraint();
-            }
-        }
-
-        private void OnAnimatorMove()
-        {
-            if (updateMode == UpdateMode.Animation)
             {
                 ApplyConstraint();
             }

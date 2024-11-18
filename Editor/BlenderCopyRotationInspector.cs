@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using BlenderConstraints;
@@ -31,16 +29,7 @@ public class BlenderCopyRotationInspector : Editor
 
         if (GUILayout.Button("convert to simple constraint"))
         {
-            Undo.RecordObject(target.gameObject, "convert to simple constraint");
-            var simpleConstraint = target.gameObject.AddComponent<BlenderCopyRotationSimple>();
-            simpleConstraint.weight = target.weight;
-            simpleConstraint.constrained = target.data.constrained;
-            simpleConstraint.target = target.data.target;
-            simpleConstraint.constrainedRestPose = Quaternion.Euler(target.data.savedRotationConstrained);
-            simpleConstraint.targetRestPose = Quaternion.Euler(target.data.savedRotationTarget);
-            simpleConstraint.order = target.data.eulerAxisOrder;
-            simpleConstraint.mask = target.data.includedAxes;
-            DestroyImmediate(target);
+            ConvertBlenderConstraints.ConvertComponent(target, useAnimationRigging: false);
         }
     }
 }
@@ -72,16 +61,7 @@ public class BlenderCopyRotationSimpleInspector : Editor
 
         if (GUILayout.Button("convert to animation rigging constraint"))
         {
-            Undo.RecordObject(target.gameObject, "convert to animation rigging constraint");
-            var animRigConstraint = target.gameObject.AddComponent<BlenderCopyRotation>();
-            animRigConstraint.weight = target.weight;
-            animRigConstraint.data.constrained = target.constrained;
-            animRigConstraint.data.target = target.target;
-            animRigConstraint.data.savedRotationConstrained = target.constrainedRestPose.eulerAngles;
-            animRigConstraint.data.savedRotationTarget = target.targetRestPose.eulerAngles;
-            animRigConstraint.data.eulerAxisOrder = target.order;
-            animRigConstraint.data.includedAxes = target.mask;
-            DestroyImmediate(target);
+           ConvertBlenderConstraints.ConvertComponent(target, useAnimationRigging: true);
         }
     }
 }
