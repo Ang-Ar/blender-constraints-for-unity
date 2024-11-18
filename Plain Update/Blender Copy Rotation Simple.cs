@@ -4,8 +4,14 @@ using UnityEngine;
 namespace BlenderConstraints
 {
     [ExecuteAlways]
-    public class BlenderCopyRotationSimple : MonoBehaviour
+    public class BlenderCopyRotationSimple : MonoBehaviour, IBlenderConstraintSimple
     {
+        public float Weight { get => weight; set => weight = Mathf.Clamp(value, 0f, 1f); }
+        public Transform Constrained { get => constrained; set => constrained = value; }
+        public Transform Target { get => target; set => target = value; }
+        public bool UpdateInEditMode { get => updateInEditMode; set => updateInEditMode = value; }
+        public UpdateMode UpdateMode { get => updateMode; set => updateMode = value; }
+
         [Range(0f, 1f)] public float weight = 1f;
 
         [Space]
@@ -36,14 +42,6 @@ namespace BlenderConstraints
         private void FixedUpdate()
         {
             if (updateMode == UpdateMode.FixedUpdate)
-            {
-                ApplyConstraint();
-            }
-        }
-
-        private void OnAnimatorMove()
-        {
-            if (updateMode == UpdateMode.Animation)
             {
                 ApplyConstraint();
             }

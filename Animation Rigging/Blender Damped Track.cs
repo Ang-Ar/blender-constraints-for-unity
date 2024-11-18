@@ -4,8 +4,11 @@ using UnityEngine.Animations.Rigging;
 
 namespace BlenderConstraints
 {
-    public class BlenderDampedTrack : RigConstraint<BlenderDampedTrackJob, BlenderDampedTrackData, BlenderDampedTrackBinder>
+    public class BlenderDampedTrack : RigConstraint<BlenderDampedTrackJob, BlenderDampedTrackData, BlenderDampedTrackBinder>, IBlenderConstraint
     {
+        public float Weight { get => this.weight; set => this.weight = value; }
+        public Transform Constrained { get => this.data.constrained; set => this.data.constrained = value; }
+        public Transform Target { get => this.data.target; set => this.data.target = value; }
     }
 
     // a custom animation job to use w/ animation rigging package

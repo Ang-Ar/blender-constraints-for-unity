@@ -5,8 +5,11 @@ using UnityEngine.Animations.Rigging;
 namespace BlenderConstraints
 {
     [DisallowMultipleComponent]
-    public class BlenderCopyRotation : RigConstraint<BlenderCopyRotationJob, BlenderCopyRotationData, BlenderCopyRotationBinder>
+    public class BlenderCopyRotation : RigConstraint<BlenderCopyRotationJob, BlenderCopyRotationData, BlenderCopyRotationBinder>, IBlenderConstraint
     {
+        public float Weight { get => this.weight; set => this.weight = value; }
+        public Transform Constrained { get => this.data.constrained; set => this.data.constrained = value; }
+        public Transform Target { get => this.data.target; set => this.data.target = value; }
     }
 
     // a custom animation job to use w/ animation rigging package
