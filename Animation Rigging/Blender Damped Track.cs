@@ -1,3 +1,6 @@
+#if UNITY_EDITOR
+using UnityEditor;
+#endif // UNITY_EDITOR
 using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Animations.Rigging;
@@ -6,9 +9,35 @@ namespace BlenderConstraints
 {
     public class BlenderDampedTrack : RigConstraint<BlenderDampedTrackJob, BlenderDampedTrackData, BlenderDampedTrackBinder>, IBlenderConstraint
     {
+        public GameObject GameObject { get => this.gameObject; }
         public float Weight { get => this.weight; set => this.weight = value; }
-        public Transform Constrained { get => this.data.constrained; set => this.data.constrained = value; }
-        public Transform Target { get => this.data.target; set => this.data.target = value; }
+        public Transform Constrained { get => this.data.constrained; }
+        public Transform Target { get => this.data.target; }
+
+#if (UNITY_EDITOR)
+        public IBlenderConstraint ConvertComponent(bool useAnimationRigging, bool updateInEditMode = true, UpdateMode updateMode = UpdateMode.Update)
+        {
+            Undo.SetCurrentGroupName("convert blender constraint");
+
+            if (useAnimationRigging) return this;
+
+            var simpleConstraint = Undo.AddComponent<BlenderDampedTrackSimple>(this.gameObject);
+            Undo.RecordObject(simpleConstraint, "clone constraint settings");
+            simpleConstraint.weight = weight;
+            simpleConstraint.constrained = data.constrained;
+            simpleConstraint.target = data.target;
+            simpleConstraint.constrainedRestPose = Quaternion.Euler(data.savedRotationConstrained);
+            simpleConstraint.axis = data.axis;
+            Undo.DestroyObjectImmediate(this);
+
+            simpleConstraint.updateInEditMode = updateInEditMode;
+            simpleConstraint.updateMode = updateMode;
+
+            PrefabUtility.RecordPrefabInstancePropertyModifications(simpleConstraint);
+
+            return simpleConstraint;
+        }
+#endif //UNITY_EDITOR
     }
 
     // a custom animation job to use w/ animation rigging package
