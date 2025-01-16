@@ -65,7 +65,7 @@ namespace BlenderConstraints
                 if (constraint.GameObject.activeInHierarchy && constraint.MonoBehaviour.enabled && constraint.UpdateMode == UpdateMode.Ordered)
                 {
                     // respect edit mode behavior override
-                    if (evaluateInEditMode == EditModeBehavior.force_on || constraint.UpdateInEditMode==true)
+                    if (Application.isPlaying || evaluateInEditMode == EditModeBehavior.force_on || constraint.UpdateInEditMode==true)
                     {
                         constraint.ApplyConstraint();
                     }
