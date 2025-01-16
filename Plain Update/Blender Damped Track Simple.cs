@@ -62,7 +62,7 @@ namespace BlenderConstraints
 
         void Update()
         {
-            if ((updateMode == UpdateMode.Update && Application.isPlaying) || (updateInEditMode && !Application.isPlaying))
+            if ((updateMode == UpdateMode.Update && Application.isPlaying) || (updateMode != UpdateMode.Ordered && updateInEditMode && !Application.isPlaying))
             {
                 ApplyConstraint();
             }
