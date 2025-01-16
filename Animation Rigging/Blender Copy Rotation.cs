@@ -10,6 +10,7 @@ namespace BlenderConstraints
     [DisallowMultipleComponent]
     public class BlenderCopyRotation : RigConstraint<BlenderCopyRotationJob, BlenderCopyRotationData, BlenderCopyRotationBinder>, IBlenderConstraint
     {
+        public MonoBehaviour MonoBehaviour { get => this; }
         public GameObject GameObject { get => this.gameObject; }
         public float Weight { get => this.weight; set => this.weight = value; }
         public Transform Constrained { get => this.data.constrained; }

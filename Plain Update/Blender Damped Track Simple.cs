@@ -8,8 +8,8 @@ namespace BlenderConstraints
     [ExecuteAlways]
     public class BlenderDampedTrackSimple : MonoBehaviour, IBlenderConstraintSimple
     {
+        public MonoBehaviour MonoBehaviour { get => this; }
         public GameObject GameObject { get => this.gameObject; }
-
         public float Weight { get => weight; set => weight = Mathf.Clamp(value, 0f, 1f); }
         public Transform Constrained { get => constrained; }
         public Transform Target { get => target; }
@@ -62,7 +62,7 @@ namespace BlenderConstraints
 
         void Update()
         {
-            if ((updateMode == UpdateMode.Update && Application.isPlaying) || (updateInEditMode && !Application.isPlaying))
+            if ((updateMode == UpdateMode.Update && Application.isPlaying) || (updateMode != UpdateMode.Ordered && updateInEditMode && !Application.isPlaying))
             {
                 ApplyConstraint();
             }

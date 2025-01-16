@@ -9,6 +9,7 @@ namespace BlenderConstraints
 {
     public class BlenderDampedTrack : RigConstraint<BlenderDampedTrackJob, BlenderDampedTrackData, BlenderDampedTrackBinder>, IBlenderConstraint
     {
+        public MonoBehaviour MonoBehaviour { get => this; }
         public GameObject GameObject { get => this.gameObject; }
         public float Weight { get => this.weight; set => this.weight = value; }
         public Transform Constrained { get => this.data.constrained; }

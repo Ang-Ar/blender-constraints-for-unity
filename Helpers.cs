@@ -17,7 +17,7 @@ namespace BlenderConstraints
     {
         Update,
         FixedUpdate,
-        Animation, // currently non functional
+        Ordered,
     }
 
     public enum EulerAxisOrder
