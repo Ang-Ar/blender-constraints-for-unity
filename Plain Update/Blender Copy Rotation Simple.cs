@@ -9,6 +9,7 @@ namespace BlenderConstraints
     [ExecuteAlways]
     public class BlenderCopyRotationSimple : MonoBehaviour, IBlenderConstraintSimple
     {
+        public MonoBehaviour MonoBehaviour { get => this; }
         public GameObject GameObject { get => this.gameObject; }
         public float Weight { get => weight; set => weight = Mathf.Clamp(value, 0f, 1f); }
         public Transform Constrained { get => constrained; }

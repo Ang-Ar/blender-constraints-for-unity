@@ -6,6 +6,7 @@ namespace BlenderConstraints
 {
     public interface IBlenderConstraint
     {
+        public MonoBehaviour MonoBehaviour { get;  }
         public GameObject GameObject { get; }
         public float Weight { get; set; }
         public Transform Constrained { get;}
