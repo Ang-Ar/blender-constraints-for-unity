@@ -1,4 +1,5 @@
 using BlenderConstraints;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
@@ -59,8 +60,8 @@ public class ConvertBlenderConstraints : EditorWindow
             constraintsForConversion.AddRange(blenderConstraintsInGO);
             Debug.Log($"Found {blenderConstraintsInGO.Length} constraints in \"{go.name}\"");
         }
-        ConvertComponents(constraintsForConversion, useAnimationRigging, updateInEditMode, updateMode);
-        Debug.Log($"Converted {constraintsForConversion.Count} constraints total");
+        int successes = ConvertComponents(constraintsForConversion, useAnimationRigging, updateInEditMode, updateMode);
+        Debug.Log($"Converted {successes} constraints total");
     }
 
     /// <summary>
@@ -78,17 +79,28 @@ public class ConvertBlenderConstraints : EditorWindow
     /// <summary>
     /// Identical to calling target.ConvertComponent() with the same settings.
     /// The conversions are grouped into a single undo operation.
+    /// returns amount of successful conversions
     /// </summary>
-    static public void ConvertComponents(
+    static public int ConvertComponents(
         IEnumerable<IBlenderConstraint> targets, 
         bool useAnimationRigging,
         bool updateInEditMode = true,
         UpdateMode updateMode = UpdateMode.Update)
     {
+        int successes = 0;
         foreach (var target in targets)
         {
-            ConvertComponent(target, useAnimationRigging, updateInEditMode, updateMode);
+            try
+            {
+                ConvertComponent(target, useAnimationRigging, updateInEditMode, updateMode);
+                successes++;
+            }
+            catch (Exception ex)
+            {
+                Debug.LogException(ex, target.GameObject);
+            }
         }
         Undo.SetCurrentGroupName("batch convert blender constraints");
+        return successes;
     }
 }
